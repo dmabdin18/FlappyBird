@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Bird Attack!</title>
+	<meta charset="UTF-8">
+</head>
+<body>
+<br>
+<canvas id="myCanvas" width="500" height="500" style="background-color: #80FFFF"></canvas>
+
+<script type="text/javascript">
+
+var frame = 0;
+var c=document.getElementById("myCanvas");
+var ctx=c.getContext("2d");
+var recWidth = 150;
+var tubes = [];
+var norriss = [];
+tubes.push(new Tube());
+var bird = new Bird();
+var model = new Model();
+var norris = new Norris();
+var stop = false;
+var callNorris = false;
+
+//Tube collision
+function collision(objectTwo){
+	if(200 < objectTwo.getTube_x() + 55
+		&& 264 > objectTwo.getTube_x() 
+		&& bird.getBird() < objectTwo.getTube_y() + 400
+		&& bird.getBird() + 57  > objectTwo.getTube_y() ){
+			return true;
+	} else { 
+			return false;
+	} 
+}
+
+//Norris Collision
+function nCollision(objectTwo, objectOne){
+	if(objectTwo.getNorris_x() < objectOne.getTube_x() + 55
+		&& objectTwo.getNorris_x() + 83 > objectOne.getTube_x()
+		&& objectTwo.getNorris_y() < objectOne.getTube_y() + 400
+		&& objectTwo.getNorris_y() + 83  > objectOne.getTube_y() ){	
+			objectTwo.setCol();
+			return true;
+	} else {
+			return false;
+	}
+}	
+
+					
+					
+function Norris(){
+	var norris_x = 0;
+	var norris_y = 500;
+	var vel_norris = -30;
+	var col = false;
+	var newNorris = true;
+	
+	chuck = new Image();
+	chuck.src = "chuck_norris.png";	
+	
+	this.setCol = function() { col = true; }
+	this.getCol = function() { return col; }
+	this.getNorris_x = function(){
+		return norris_x;
+	}
+	
+	this.getNorris_y = function(){
+		return norris_y;
+	}
+	
+	this.newNorris = function(){
+		vel_norris =  -30;
+	}
+	
+	this.draw = function(){
+		ctx.drawImage(chuck, norris_x, norris_y);		
+	}
+	
+	this.update = function(){
+		vel_norris += 1;
+		norris_y += vel_norris;
+		if(col){
+			norris_x -= 10;
+		} else {
+			norris_x += 10;
+		}
+	}
+}
+
+function Bird(){
+	var vel_y  = 0;
+	var counter = 0;
+	var hand_y = 510;
+	var birdGrabbed = false;
+	var bird_y = 200;
+	var bird_x = 200;
+	//Loading the bird and hand images
+	this.canvas = document.getElementById("myCanvas");
+	birdImage1 = new Image();
+	birdImage1.src = "bird.png";	
+	birdImage2 = new Image();
+	birdImage2.src = "bird2.png";
+	var hand1 = new Image();
+	hand1.src = "hand1.png";
+	var hand2 = new Image();
+	hand2.src = "hand2.png";
+
+	this.getBird = function(){
+		return bird_y;
+	}
+
+	this.draw = function(){
+
+		ctx.rect(10, 10, 150, 40);
+		ctx.stroke();
+		ctx.fillStyle = "#FF0000";
+		ctx.fillRect(10, 10, recWidth, 40);
+		if(counter < 3){
+			ctx.drawImage(birdImage2, bird_x, bird_y);
+		} else {
+			ctx.drawImage(birdImage1, bird_x, bird_y);
+		}
+		
+		if(birdGrabbed == false){
+			ctx.drawImage(hand1, 200, hand_y);
+		} else {
+			ctx.drawImage(hand2, 200, hand_y);
+		}
+	}
+	this.update = function(){
+		vel_y += 1.5;
+		bird_y += vel_y;
+		counter++;
+	}
+
+	this.flap = function(){
+		vel_y = -20;
+		counter = 0;
+	}
+
+	this.grabBird = function()  {
+		if(hand_y > bird_y){
+			hand_y -= 6;
+		} else if (birdGrabbed == true){
+			hand_y += 6;
+			bird_y += 6;
+		} else {
+			birdGrabbed = true;
+		}
+	}
+}
+function onLeftClick() {
+	bird.flap();
+}
+
+function onRightClick(){
+	recWidth -= 7;
+	norriss.push(new Norris());
+	norriss.newNorris();
+}
+
+
+//TUBE CLASS
+function Tube(){
+	//Loads tube images
+	var tube_x = 510;
+	var tube_y = 0;
+	var direction;
+	var tubeDown = new Image();
+	tubeDown.src = "tube_down.png";
+	var tubeUp = new Image();
+	tubeUp.src = "tube_up.png";
+	var shouldTubeFall = false;
+
+	
+	var rndBoolean = Math.random() >= 0.5;
+	if(rndBoolean){
+		direction = true;
+		tube_y = (Math.random() * (310 - 50) + 50) * -1;//help by Siddiqui with Random 
+	} else {
+		direction = false;
+		tube_y = (Math.random() * (290 - 100) + 100);
+	}
+
+	//shouldTubeFall getter
+	this.getshouldTubeFall = function(){ return shouldTubeFall; }
+
+	//shouldTubeFall setter
+	this.setShouldTubeFall = function(){ shouldTubeFall = true; }
+	
+	//Tube_x getter
+	this.getTube_x = function(){ return tube_x; }
+	
+	//Tube_y getter
+	this.getTube_y = function(){ return tube_y; }
+
+	this.draw = function(){
+		if(direction == true){
+			ctx.drawImage(tubeDown, tube_x, tube_y);
+		} else {
+			ctx.drawImage(tubeUp, tube_x, tube_y);
+		}
+	}	
+	
+	this.update = function() {
+		if (shouldTubeFall == false){
+			tube_x -= 7;	
+		} else {
+			tube_x += 7;
+			tube_y += 10;
+		}
+	}
+}//end Tube
+
+
+function Model(){
+	this.update = function(){
+		if(recWidth > 0)
+		{
+			if (++frame % 60 === 0){
+				tubes.push(new Tube());//Adds new tubes to the collection
+			}
+			
+			if(recWidth < 150){
+				recWidth += .1;//slowly increases energy
+			}
+			
+			for (var i = 0; i < tubes.length; i++){
+				tubes[i].update();
+				if(tubes[i].getTube_x() < -30){
+					tubes.splice(i, 1);
+				}
+
+				if(collision(tubes[i])){
+					recWidth -= 3;
+				}			
+			
+				for (var j = 0; j < norriss.length; j++){
+					if(norriss[j].getNorris_x() > 510){
+						norriss.splice(i, 1);
+					}
+					if(norriss.length > 0){//norris array is not empty
+						if(nCollision(norriss[j], tubes[i])){
+							tubes[i].setShouldTubeFall();
+							//norriss[j].setCol();
+						}
+					}						
+				}
+			}	
+			for(var j = 0; j < norriss.length; j++){
+				norriss[j].update();
+			} 
+		}
+		else
+		{
+			bird.grabBird();
+		}
+	}
+	this.draw = function(){
+		for (var i = 0; i < tubes.length; i++){
+			tubes[i].draw();
+		}
+		
+		for(var j = 0; j < norriss.length;j++){
+			norriss[j].draw();
+		}
+	}
+}
+function Game()
+{
+	var left = 0;
+	var right = 2;
+	
+	document.addEventListener("mousedown", function(e){
+		if(e.button === left){
+			onLeftClick();
+		} else if(e.button === right) {
+			onRightClick();
+		}
+	});
+	myCanvas.oncontextmenu = function () { return false; }
+
+	tube = new Tube();
+
+	this.onTimer = function()
+	{
+		ctx.clearRect(0, 0, 500, 500);	
+		model.draw();
+		model.update();
+		bird.draw();	
+		if(recWidth > 0){
+			bird.update();
+		} 
+		
+}
+}
+
+var game = new Game();
+var timer = setInterval(function() { game.onTimer(); }, 20);
+
+</script>
+
+</body>
+</html>
