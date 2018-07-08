@@ -1,3 +1,2 @@
 # FlappyBird
-Created a game for Programming Paradigms project
-Implements a flappy bird game
+Created a game for Programming Paradigms project that implements a flappy bird game
